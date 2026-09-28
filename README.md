@@ -8,17 +8,15 @@ Disciplina: Sistema de Banco de Dados 2, turma 03, 2026.2.
 
 ## Equipe
 
-| Nome                              | Papel no pipeline de dados                              |
-| --------------------------------- | ------------------------------------------------------- |
-| Lucas Macedo Barboza              | Integrante                                              |
-| Caetano Santos Lucio              | Engenharia de dados, embeddings e runtime do assistente |
-| Cairo Florenço                    | Integrante                                              |
-| Leonardo Sobrinho                 | Integrante                                              |
-| Carlos Eduardo Mendes de Mesquita | Integrante                                              |
-| Bruna                             | Integrante                                              |
-| Lais                              | Integrante                                              |
-
-Os papéis acima são os que a planilha de acompanhamento registra. Caetano Santos Lucio responde pela ingestão dos dados abertos e dos currículos Lattes, pela limpeza cadastral, pela geração de embeddings e pela inferência em tempo real.
+| Nome                              | Papel no pipeline de dados |
+| --------------------------------- | -------------------------- |
+| Lucas Macedo Barboza              | Integrante                 |
+| Caetano Santos Lucio              | Integrante                 |
+| Cairo Florenço                    | Integrante                 |
+| Leonardo Sobrinho                 | Integrante                 |
+| Carlos Eduardo Mendes de Mesquita | Integrante                 |
+| Bruna                             | Integrante                 |
+| Lais                              | Integrante                 |
 
 ## O que o sistema faz
 
