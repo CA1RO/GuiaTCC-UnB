@@ -27,6 +27,7 @@ class DocenteCreate(BaseModel):
 class ProjetoCreate(BaseModel):
     titulo: str
     descricao: str | None = None
+    tipo: str = "pesquisa"
     ano_inicio: int | None = None
     ano_fim: int | None = None
     status: str = "ativo"
@@ -43,6 +44,7 @@ class DocenteResponse(BaseModel):
     id_departamento: int | None
     departamento_nome: str | None = None
     departamento_sigla: str | None = None
+    linha_pesquisa: str | None = None
     situacao: str
 
     model_config = {"from_attributes": True}
@@ -62,6 +64,7 @@ class ProjetoResponse(BaseModel):
     id_docente: int
     titulo: str
     descricao: str | None
+    tipo: str
     ano_inicio: int | None
     ano_fim: int | None
     status: str

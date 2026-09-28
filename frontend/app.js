@@ -1,18 +1,17 @@
 const lista = document.querySelector("#lista");
 const filtros = document.querySelector("#filtros");
+const tipos = document.querySelector("#tipos");
 const contagem = document.querySelector("#contagem");
+const tituloCatalogo = document.querySelector("#titulo-catalogo");
+const aviso = document.querySelector("#aviso");
 const vazio = document.querySelector("#vazio");
 const mensagens = document.querySelector("#mensagens");
 const painel = document.querySelector("#painel");
 const saude = document.querySelector("#saude");
 
+const ROTULOS = { pesquisa: "Pesquisa", extensao: "Extensão", tcc: "TCC" };
 let departamentoAtivo = "";
-
-function iniciais(nome) {
-  const partes = nome.trim().split(/\s+/);
-  const ultima = partes.length > 1 ? partes[partes.length - 1] : "";
-  return (partes[0][0] + (ultima[0] || "")).toUpperCase();
-}
+let tipoAtivo = "";
 
 async function lerJson(resposta) {
   if (!resposta.ok) {
@@ -22,118 +21,168 @@ async function lerJson(resposta) {
   return resposta.json();
 }
 
-function renderDocentes(docentes) {
-  lista.replaceChildren();
-  contagem.textContent = docentes.length === 1 ? "1 docente" : `${docentes.length} docentes`;
-  vazio.hidden = docentes.length > 0;
+function cartao(rotulo, titulo, linha, extra) {
+  const card = document.createElement("button");
+  card.className = "card";
+  card.type = "button";
+  const selo = document.createElement("span");
+  selo.className = "selo";
+  selo.textContent = rotulo;
+  const nome = document.createElement("strong");
+  nome.textContent = titulo;
+  const detalhe = document.createElement("span");
+  detalhe.textContent = linha;
+  const complemento = document.createElement("span");
+  complemento.textContent = extra;
+  card.append(selo, nome, detalhe, complemento);
+  return card;
+}
 
-  for (const docente of docentes) {
-    const card = document.createElement("button");
-    card.className = "card";
-    card.type = "button";
-    card.innerHTML = `
-      <span class="avatar">${iniciais(docente.nome)}</span>
-      <strong></strong>
-      <span></span>
-      <span></span>
-    `;
-    card.querySelector("strong").textContent = docente.nome;
-    card.querySelectorAll("span")[1].textContent = docente.departamento_sigla || docente.departamento_nome || "Departamento não informado";
-    card.querySelectorAll("span")[2].textContent = docente.titulacao || docente.situacao;
-    card.addEventListener("click", () => abrirDocente(docente.id_docente));
+function renderBusca(resultado) {
+  lista.replaceChildren();
+  const projetos = resultado.projetos || [];
+  const docentes = resultado.docentes || [];
+  const mostrandoDocentes = resultado.modo === "docentes";
+  tituloCatalogo.textContent = mostrandoDocentes ? "Docentes" : "Projetos";
+  aviso.hidden = !mostrandoDocentes;
+  aviso.textContent = mostrandoDocentes
+    ? "Não há projeto de pesquisa, extensão ou TCC nessa linha. Estes docentes seguem algo próximo."
+    : "";
+
+  if (mostrandoDocentes) {
+    contagem.textContent = docentes.length === 1 ? "1 docente" : `${docentes.length} docentes`;
+    vazio.hidden = docentes.length > 0;
+    vazio.textContent = "Nenhum docente com linha próxima.";
+    for (const docente of docentes) {
+      const card = cartao(
+        docente.departamento_sigla || "UnB",
+        docente.nome,
+        docente.linha_pesquisa || "Linha não informada",
+        docente.titulacao || "",
+      );
+      card.addEventListener("click", () => abrirDocente(docente));
+      lista.append(card);
+    }
+    return;
+  }
+
+  contagem.textContent = projetos.length === 1 ? "1 projeto" : `${projetos.length} projetos`;
+  vazio.hidden = projetos.length > 0;
+  vazio.textContent = "Nenhum projeto encontrado para essa busca.";
+  for (const projeto of projetos) {
+    const card = cartao(
+      ROTULOS[projeto.tipo] || projeto.tipo,
+      projeto.titulo,
+      projeto.nome_docente,
+      projeto.departamento_sigla || projeto.departamento_nome || "",
+    );
+    card.addEventListener("click", () => abrirProjeto(projeto));
     lista.append(card);
   }
 }
 
-async function carregarDocentes(params = {}) {
+async function carregarBusca() {
   const consulta = new URLSearchParams();
-  if (params.nome) consulta.set("nome", params.nome);
-  if (params.departamento) consulta.set("departamento", params.departamento);
+  const termo = document.querySelector("#busca").value.trim();
+  if (termo) consulta.set("q", termo);
+  if (tipoAtivo) consulta.set("tipo", tipoAtivo);
+  if (departamentoAtivo) consulta.set("departamento", departamentoAtivo);
   const sufixo = consulta.toString() ? `?${consulta}` : "";
-  const docentes = await lerJson(await fetch(`/api/v1/docentes/${sufixo}`));
-  renderDocentes(docentes);
-  return docentes;
+  const resultado = await lerJson(await fetch(`/api/v1/busca/${sufixo}`));
+  renderBusca(resultado);
+  return resultado;
+}
+
+function chip(grupo, texto, ativo, aoClicar) {
+  const botao = document.createElement("button");
+  botao.className = "chip";
+  botao.type = "button";
+  botao.textContent = texto;
+  botao.setAttribute("aria-pressed", String(ativo));
+  botao.addEventListener("click", () => aoClicar(botao));
+  grupo.append(botao);
+  return botao;
+}
+
+function marcar(grupo, botao) {
+  for (const item of grupo.querySelectorAll(".chip")) {
+    item.setAttribute("aria-pressed", item === botao ? "true" : "false");
+  }
 }
 
 async function carregarFiltros() {
+  tipos.replaceChildren();
+  chip(tipos, "Todos os tipos", true, async (botao) => {
+    tipoAtivo = "";
+    marcar(tipos, botao);
+    await carregarBusca();
+  });
+  for (const [valor, rotulo] of Object.entries(ROTULOS)) {
+    chip(tipos, rotulo, false, async (botao) => {
+      tipoAtivo = valor;
+      marcar(tipos, botao);
+      await carregarBusca();
+    });
+  }
+
   const departamentos = await lerJson(await fetch("/api/v1/departamentos/"));
   filtros.replaceChildren();
-
-  const todos = document.createElement("button");
-  todos.className = "chip";
-  todos.type = "button";
-  todos.textContent = "Todos";
-  todos.setAttribute("aria-pressed", "true");
-  todos.addEventListener("click", () => selecionarDepartamento("", todos));
-  filtros.append(todos);
-
+  chip(filtros, "Todos", true, async (botao) => {
+    departamentoAtivo = "";
+    marcar(filtros, botao);
+    await carregarBusca();
+  });
   for (const departamento of departamentos) {
-    const chip = document.createElement("button");
-    chip.className = "chip";
-    chip.type = "button";
-    chip.textContent = departamento.sigla || departamento.nome;
-    chip.title = departamento.nome;
-    chip.setAttribute("aria-pressed", "false");
-    chip.addEventListener("click", () => selecionarDepartamento(departamento.nome, chip));
-    filtros.append(chip);
+    chip(filtros, departamento.sigla || departamento.nome, false, async (botao) => {
+      departamentoAtivo = departamento.nome;
+      marcar(filtros, botao);
+      await carregarBusca();
+    });
   }
 }
 
-async function selecionarDepartamento(nome, botao) {
-  departamentoAtivo = nome;
-  document.querySelector("#busca").value = "";
-  for (const chip of filtros.querySelectorAll(".chip")) {
-    chip.setAttribute("aria-pressed", chip === botao ? "true" : "false");
-  }
-  await carregarDocentes(nome ? { departamento: nome } : {});
-}
-
-async function abrirDocente(id) {
-  const [docente, projetos] = await Promise.all([
-    lerJson(await fetch(`/api/v1/docentes/${id}`)),
-    lerJson(await fetch(`/api/v1/docentes/${id}/projetos`)),
-  ]);
-
-  document.querySelector("#painel-depto").textContent = docente.departamento_nome || "UnB";
-  document.querySelector("#painel-nome").textContent = docente.nome;
-  const meta = [docente.titulacao, docente.email].filter(Boolean).join(" · ");
-  document.querySelector("#painel-meta").textContent = meta || "Cadastro sem contato informado";
-
-  const destino = document.querySelector("#painel-projetos");
+function preencherPainel(sobretitulo, titulo, meta, paragrafos, palavras = []) {
+  document.querySelector("#painel-depto").textContent = sobretitulo;
+  document.querySelector("#painel-nome").textContent = titulo;
+  document.querySelector("#painel-meta").textContent = meta;
+  const destino = document.querySelector("#painel-corpo");
   destino.replaceChildren();
-  if (!projetos.length) {
-    destino.textContent = "Nenhum projeto cadastrado.";
-    painel.showModal();
-    return;
+  for (const texto of paragrafos.filter(Boolean)) {
+    const paragrafo = document.createElement("p");
+    paragrafo.textContent = texto;
+    destino.append(paragrafo);
   }
-
-  for (const projeto of projetos) {
-    const bloco = document.createElement("article");
-    bloco.className = "projeto";
-    const titulo = document.createElement("div");
-    titulo.className = "projeto-topo";
-    const h = document.createElement("strong");
-    h.textContent = projeto.titulo;
-    const ano = document.createElement("span");
-    ano.textContent = [projeto.ano_inicio, projeto.ano_fim].filter(Boolean).join("–") || projeto.status;
-    titulo.append(h, ano);
-    const descricao = document.createElement("p");
-    descricao.textContent = projeto.descricao || "";
-    bloco.append(titulo, descricao);
-    if (projeto.palavras_chave?.length) {
-      const tags = document.createElement("div");
-      tags.className = "tags";
-      for (const palavra of projeto.palavras_chave) {
-        const tag = document.createElement("span");
-        tag.className = "tag";
-        tag.textContent = palavra;
-        tags.append(tag);
-      }
-      bloco.append(tags);
+  if (palavras.length) {
+    const tags = document.createElement("div");
+    tags.className = "tags";
+    for (const palavra of palavras) {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = palavra;
+      tags.append(tag);
     }
-    destino.append(bloco);
+    destino.append(tags);
   }
   painel.showModal();
+}
+
+function abrirProjeto(projeto) {
+  preencherPainel(
+    `${ROTULOS[projeto.tipo] || projeto.tipo} · ${projeto.departamento_sigla || "UnB"}`,
+    projeto.titulo,
+    [projeto.nome_docente, projeto.titulacao, projeto.email_docente].filter(Boolean).join(" · "),
+    [projeto.descricao],
+    projeto.palavras_chave || [],
+  );
+}
+
+function abrirDocente(docente) {
+  preencherPainel(
+    docente.departamento_nome || "UnB",
+    docente.nome,
+    [docente.titulacao, docente.email].filter(Boolean).join(" · "),
+    ["Não há projeto cadastrado nessa linha.", docente.linha_pesquisa],
+  );
 }
 
 function adicionarBolha(texto, tipo, itens = []) {
@@ -184,17 +233,7 @@ async function perguntar(texto) {
 
 document.querySelector("#busca-form").addEventListener("submit", async (evento) => {
   evento.preventDefault();
-  const termo = document.querySelector("#busca").value.trim();
-  departamentoAtivo = "";
-  for (const chip of filtros.querySelectorAll(".chip")) {
-    chip.setAttribute("aria-pressed", chip.textContent === "Todos" ? "true" : "false");
-  }
-  if (!termo) {
-    await carregarDocentes();
-    return;
-  }
-  const porNome = await carregarDocentes({ nome: termo });
-  if (!porNome.length) await carregarDocentes({ departamento: termo });
+  await carregarBusca();
 });
 
 document.querySelector("#perguntar").addEventListener("click", () => {
@@ -263,7 +302,8 @@ async function iniciar() {
     const ok = estado.status === "healthy";
     saude.textContent = ok ? "Serviços no ar" : "Serviço degradado";
     saude.classList.add(ok ? "ok" : "erro");
-    await Promise.all([carregarFiltros(), carregarDocentes()]);
+    await carregarFiltros();
+    await carregarBusca();
   } catch (erro) {
     saude.textContent = "API indisponível";
     saude.classList.add("erro");

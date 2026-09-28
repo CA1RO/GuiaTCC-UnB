@@ -11,12 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.db.models import SessaoInteracao
 from src.db.session import get_db
-from src.pipeline.embeddings import (
-    buscar_lexical,
-    buscar_similar,
-    get_embedding_model,
-    indexar_projetos_se_vazio,
-)
+from src.pipeline.afinidade import ROTULOS, buscar_afinidade
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +42,14 @@ class PerguntaResponse(BaseModel):
     mensagem: str
 
 
-def _responder(pergunta: str, chunks: list[dict]) -> str:
+def _responder(pergunta: str, chunks: list[dict], modo: str) -> str:
     contexto = "\n\n".join(
         f"- {chunk['nome_docente']}: {chunk['conteudo_texto']}" for chunk in chunks
+    )
+    instrucao = (
+        "Há projetos alinhados. Apresente cada projeto, o tipo (pesquisa, extensão ou TCC) e o docente responsável."
+        if modo == "projetos"
+        else "Não há projeto nessa linha. Apresente os docentes e a linha de pesquisa de cada um."
     )
     cliente = OpenAI(api_key=settings.openai_api_key)
     resposta = cliente.chat.completions.create(
@@ -59,32 +59,57 @@ def _responder(pergunta: str, chunks: list[dict]) -> str:
             {
                 "role": "system",
                 "content": (
-                    "Você ajuda alunos da UnB a escolher orientador de TCC. "
-                    "Use somente os trechos fornecidos. Responda em português, "
-                    "cite o nome do docente e o projeto, e diga por que o tema se aproxima. "
-                    "Se nenhum trecho servir, diga isso com clareza."
+                    "Você ajuda alunos da UnB a achar um projeto de pesquisa, extensão ou TCC. "
+                    "Use somente o contexto. Responda em português. " + instrucao
                 ),
             },
-            {
-                "role": "user",
-                "content": f"Pergunta do aluno: {pergunta}\n\nTrechos recuperados:\n{contexto}",
-            },
+            {"role": "user", "content": f"Afinidade do aluno: {pergunta}\n\nContexto:\n{contexto}"},
         ],
     )
     return resposta.choices[0].message.content or ""
 
 
-def _resposta_textual(pergunta: str, chunks: list[dict]) -> str:
-    principais = chunks[:3]
-    indicacoes = " ".join(
-        f"{chunk['nome_docente']} conduz “{chunk['metadados'].get('titulo', 'um projeto relacionado')}”."
-        for chunk in principais
-    )
-    return (
-        "A chave da OpenAI foi reconhecida, mas a conta está sem créditos, "
-        "então a recomendação saiu da busca textual dos projetos cadastrados. "
-        f"Para “{pergunta}”, {indicacoes}"
-    )
+def _resposta_textual(pergunta: str, resultado: dict) -> str:
+    if resultado["projetos"]:
+        frases = [
+            f"{item['nome_docente']} conduz o projeto de {ROTULOS.get(item['tipo'], item['tipo']).lower()} “{item['titulo']}”."
+            for item in resultado["projetos"][:3]
+        ]
+        return f"Há projetos alinhados a “{pergunta}”. " + " ".join(frases)
+    if resultado["docentes"]:
+        frases = [
+            f"{item['nome']} segue esta linha: {item['linha_pesquisa']}."
+            for item in resultado["docentes"][:3]
+        ]
+        return (
+            f"Não há projeto de pesquisa, extensão ou TCC alinhado a “{pergunta}”. "
+            + " ".join(frases)
+        )
+    return "Não encontrei projeto nem docente com uma linha próxima desse tema."
+
+
+def _chunks(resultado: dict) -> list[dict]:
+    if resultado["projetos"]:
+        return [
+            {
+                "id_chunk": item["id_projeto"],
+                "conteudo_texto": f"{ROTULOS.get(item['tipo'], item['tipo'])}: {item['titulo']}. {item['descricao'] or ''}",
+                "nome_docente": item["nome_docente"],
+                "similaridade": item["similaridade"] or 0,
+                "metadados": {"titulo": item["titulo"], "tipo": item["tipo"]},
+            }
+            for item in resultado["projetos"]
+        ]
+    return [
+        {
+            "id_chunk": item["id_docente"],
+            "conteudo_texto": item["linha_pesquisa"] or "",
+            "nome_docente": item["nome"],
+            "similaridade": item["similaridade"] or 0,
+            "metadados": {"linha_pesquisa": item["linha_pesquisa"]},
+        }
+        for item in resultado["docentes"]
+    ]
 
 
 def _registrar(db: AsyncSession, payload: PerguntaRequest, resposta: str, chunks: list[dict]) -> None:
@@ -105,100 +130,37 @@ async def buscar_orientador(
     payload: PerguntaRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Gera o embedding da pergunta, busca os trechos mais próximos e redige a recomendação."""
-    if not settings.openai_api_key:
-        return PerguntaResponse(
-            pergunta=payload.pergunta,
-            chunks_relevantes=[],
-            resposta_rag=None,
-            mensagem=(
-                "A chave da OpenAI não chegou na API. "
-                "Salve OPENAI_API_KEY no .env e reinicie o container: docker compose up -d"
-            ),
-        )
+    """Procura projetos alinhados à pergunta. Sem projeto, indica docentes com linha parecida."""
+    resultado = await buscar_afinidade(
+        db,
+        termo=payload.pergunta,
+        departamento=payload.departamento,
+        limite=payload.top_k,
+    )
+    encontrados = _chunks(resultado)
+    resposta = _resposta_textual(payload.pergunta, resultado)
+    if settings.openai_api_key and encontrados:
+        try:
+            resposta = _responder(payload.pergunta, encontrados, resultado["modo"])
+        except (RateLimitError, APIStatusError):
+            logger.warning("OpenAI indisponível; a resposta ficou na busca textual")
+        except Exception:
+            logger.exception("Falha ao redigir a resposta com o modelo")
 
-    try:
-        await indexar_projetos_se_vazio(db)
-        vetor = get_embedding_model().embed_query(payload.pergunta)
-        encontrados = await buscar_similar(
-            db,
-            vetor,
-            top_k=payload.top_k,
-            filtro_departamento=payload.departamento,
-        )
-    except RateLimitError:
-        logger.warning("OpenAI sem créditos; usando busca textual")
-        encontrados = await buscar_lexical(
-            db,
-            payload.pergunta,
-            top_k=payload.top_k,
-            filtro_departamento=payload.departamento,
-        )
-        if not encontrados:
-            return PerguntaResponse(
-                pergunta=payload.pergunta,
-                chunks_relevantes=[],
-                resposta_rag=None,
-                mensagem=(
-                    "A chave da OpenAI foi reconhecida, mas a conta está sem créditos "
-                    "e a busca textual não achou um projeto próximo."
-                ),
-            )
-        resposta = _resposta_textual(payload.pergunta, encontrados)
+    if encontrados:
         _registrar(db, payload, resposta, encontrados)
-        return PerguntaResponse(
-            pergunta=payload.pergunta,
-            chunks_relevantes=[ChunkResult(**chunk) for chunk in encontrados],
-            resposta_rag=resposta,
-            mensagem="Recomendação textual, porque a conta OpenAI está sem créditos.",
-        )
-    except APIStatusError as exc:
-        logger.warning("OpenAI recusou a chamada com status %s", exc.status_code)
-        mensagem = (
-            "A OpenAI recusou a chave. Gere outra em platform.openai.com e atualize o .env."
-            if exc.status_code in {401, 403}
-            else "A OpenAI não completou a busca semântica agora."
-        )
-        return PerguntaResponse(
-            pergunta=payload.pergunta,
-            chunks_relevantes=[],
-            resposta_rag=None,
-            mensagem=mensagem,
-        )
-    except Exception:
-        logger.exception("Falha ao consultar embeddings")
-        return PerguntaResponse(
-            pergunta=payload.pergunta,
-            chunks_relevantes=[],
-            resposta_rag=None,
-            mensagem="Não foi possível gerar a busca semântica. Tente de novo em instantes.",
-        )
-
-    if not encontrados:
-        return PerguntaResponse(
-            pergunta=payload.pergunta,
-            chunks_relevantes=[],
-            resposta_rag=None,
-            mensagem="Nenhum projeto cadastrado se aproxima dessa pergunta.",
-        )
-
-    try:
-        resposta = _responder(payload.pergunta, encontrados)
-    except Exception:
-        logger.exception("Falha ao gerar a resposta do modelo")
-        return PerguntaResponse(
-            pergunta=payload.pergunta,
-            chunks_relevantes=[ChunkResult(**chunk) for chunk in encontrados],
-            resposta_rag=None,
-            mensagem="A busca encontrou docentes, mas a redação da resposta falhou.",
-        )
-
-    _registrar(db, payload, resposta, encontrados)
+    mensagem = (
+        "Projetos alinhados à afinidade informada."
+        if resultado["modo"] == "projetos" and resultado["projetos"]
+        else "Sem projeto nessa linha; a indicação é pela linha do docente."
+        if resultado["docentes"]
+        else "Nenhum projeto ou docente se aproxima dessa afinidade."
+    )
     return PerguntaResponse(
         pergunta=payload.pergunta,
         chunks_relevantes=[ChunkResult(**chunk) for chunk in encontrados],
         resposta_rag=resposta,
-        mensagem="Recomendação gerada a partir dos projetos cadastrados.",
+        mensagem=mensagem,
     )
 
 
