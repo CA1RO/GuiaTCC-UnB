@@ -32,12 +32,12 @@ Na interface em `http://localhost:8000` dá para:
 
 ## De onde vêm os dados
 
-| Fonte                | Quem gera                                    | O que contém                                                                          | Chegada                       |
-| -------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------- |
-| Dados abertos da UnB | Portal de Dados Abertos / DPO / DEG          | Nome, departamento, titulação, e-mail institucional e situação funcional dos docentes | CSV ou API CKAN, em lote      |
-| Currículos Lattes    | Plataforma Lattes, preenchida pelos docentes | Resumo, áreas CNPq, artigos, projetos e orientações                                   | XML, em lote                  |
-| Perfil do estudante  | O próprio aluno, no sistema                  | Matrícula, curso, áreas de interesse e tema de TCC                                    | Formulário web, em tempo real |
-| Consultas do chat    | O aluno na interface                         | Texto da dúvida e histórico da conversa                                               | HTTP JSON, em tempo real      |
+| Fonte                | Quem gera                                    | O que contém                                                                                  | Chegada                       |
+| -------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------- |
+| Dados abertos da UnB | Portal de Dados Abertos / DPO / DEG          | Nome, unidade de lotação, classe e situação funcional dos docentes. O arquivo não traz e-mail | CSV compactado em 7z, em lote |
+| Currículos Lattes    | Plataforma Lattes, preenchida pelos docentes | Resumo, áreas CNPq, artigos, projetos e orientações                                           | XML, em lote                  |
+| Perfil do estudante  | O próprio aluno, no sistema                  | Matrícula, curso, áreas de interesse e tema de TCC                                            | Formulário web, em tempo real |
+| Consultas do chat    | O aluno na interface                         | Texto da dúvida e histórico da conversa                                                       | HTTP JSON, em tempo real      |
 
 Docentes e currículos são dado pessoal. A planilha registra a base legal de cada fonte (obrigação legal e políticas públicas para os dados abertos; dado manifestamente público para o Lattes; consentimento para o perfil do estudante).
 
@@ -63,13 +63,13 @@ O desenho original da planilha previa MinIO como data lake. As imagens públicas
 
 ## Modelo
 
-| Entidade            | Representa                                    | Modelo                   |
-| ------------------- | --------------------------------------------- | ------------------------ |
+| Entidade            | Representa                                                   | Modelo                   |
+| ------------------- | ------------------------------------------------------------ | ------------------------ |
 | Docente             | Professor e a linha de pesquisa, usada quando não há projeto | Relacional, normalizado  |
-| Projeto             | Pesquisa, extensão ou TCC de um docente       | Relacional, normalizado  |
-| Chunk vetorial      | Trecho de resumo ou publicação, com embedding | Vetorial, desnormalizado |
-| Sessão de interação | Pergunta do aluno, resposta e feedback        | Documento (JSONB)        |
-| Estudante           | Perfil de quem está buscando orientador       | Relacional               |
+| Projeto             | Pesquisa, extensão ou TCC de um docente                      | Relacional, normalizado  |
+| Chunk vetorial      | Trecho de resumo ou publicação, com embedding                | Vetorial, desnormalizado |
+| Sessão de interação | Pergunta do aluno, resposta e feedback                       | Documento (JSONB)        |
+| Estudante           | Perfil de quem está buscando orientador                      | Relacional               |
 
 As perguntas que o sistema precisa responder:
 
@@ -88,16 +88,29 @@ O dado acadêmico muda devagar, então a carga é semanal e em lote. Só a conve
 
 Se a chave da OpenAI não estiver configurada, a interface e o cadastro funcionam, mas a busca semântica ainda não gera os vetores nem a resposta do modelo.
 
+## Entrega E1
+
+A origem transacional desta entrega é o cadastro público de docentes da UnB. A pergunta de gestão, o esquema, a carga, o volume, a caracterização, o tratamento de histórico e o ADR estão em:
+
+- [Domínio e pergunta de gestão](docs/e1/01-dominio-e-pergunta.md)
+- [Esquema e migrações](docs/e1/02-esquema-e-migracoes.md)
+- [Carga reprodutível](docs/e1/03-carga-reprodutivel.md)
+- [Volume](docs/e1/04-volume.md)
+- [Caracterização da carga](docs/e1/05-caracterizacao-da-carga.md)
+- [Histórico da origem](docs/e1/06-historico-da-origem.md)
+- [ADR 0001 — estado atual do docente](docs/adr/0001-origem-guarda-estado-atual.md)
+
 ## Como rodar
 
 Requisitos: Docker e Docker Compose.
 
 ```bash
 cp .env.example .env
-docker compose up -d
+docker compose up -d --build
+docker compose exec api python -m scripts.carregar_dados_abertos
 ```
 
-Abra http://localhost:8000.
+O segundo comando baixa o arquivo público de docentes e popula o banco. Pode rodar de novo: a carga atualiza a lotação e não duplica nome. Abra http://localhost:8000.
 
 | Serviço             | Endereço                   |
 | ------------------- | -------------------------- |
@@ -107,13 +120,11 @@ Abra http://localhost:8000.
 | Redis               | localhost:6379             |
 | S3 (SeaweedFS)      | http://localhost:8333      |
 
-Para carregar departamentos, docentes e projetos de exemplo:
+Projetos de pesquisa, extensão e TCC de exemplo, com linha de pesquisa, continuam em um comando separado. O arquivo público não traz projeto. Esse comando vale uma vez: nomes de departamento e IDs Lattes são únicos, então uma segunda execução falha.
 
 ```bash
 docker compose exec api python -m scripts.seed_dados_exemplo
 ```
-
-Esse comando vale uma vez. Nomes de departamento e IDs Lattes são únicos, então uma segunda execução falha.
 
 Para ativar embeddings e a resposta do chat, preencha `OPENAI_API_KEY` no `.env` e suba de novo:
 

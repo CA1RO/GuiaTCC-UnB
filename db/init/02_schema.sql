@@ -26,6 +26,10 @@ CREATE TABLE IF NOT EXISTS docente (
     id_departamento  INTEGER REFERENCES departamento(id_departamento),
     linha_pesquisa   TEXT,
     situacao         VARCHAR(50) DEFAULT 'ativo',
+    -- data_ingresso_orgao e data_lotacao são hora do evento na fonte (DPO).
+    -- data_atualizacao e updated_at são hora da ingestão neste banco.
+    data_ingresso_orgao DATE,
+    data_lotacao     DATE,
     data_atualizacao TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     created_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -35,6 +39,7 @@ CREATE INDEX idx_docente_nome         ON docente USING btree (nome);
 CREATE INDEX idx_docente_departamento ON docente USING btree (id_departamento);
 CREATE INDEX idx_docente_id_lattes    ON docente USING btree (id_lattes);
 CREATE INDEX idx_docente_nome_trgm    ON docente USING gin (nome gin_trgm_ops);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_docente_nome ON docente (nome);
 
 -- ── Projeto (pesquisa, extensão ou TCC) ───────────────────
 CREATE TABLE IF NOT EXISTS projeto_pesquisa (
