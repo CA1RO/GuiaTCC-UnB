@@ -1,8 +1,8 @@
-name: Publicar documentação
+name: Guia Orientador
 
 on:
   push:
-    branches: [entrega-1, main, master]
+    branches: [entrega-1, main]
     paths:
       - "docs/**"
       - ".github/workflows/pages.yml"
