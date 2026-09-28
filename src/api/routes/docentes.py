@@ -10,6 +10,7 @@ from src.db.models import Departamento, Docente, ProjetoPesquisa
 from src.db.session import get_db
 
 router = APIRouter(prefix="/api/v1/docentes", tags=["Docentes"])
+catalogo = APIRouter(prefix="/api/v1/departamentos", tags=["Departamentos"])
 
 
 # ── Schemas ─────────────────────────────────────────────────
@@ -40,7 +41,18 @@ class DocenteResponse(BaseModel):
     link_lattes: str | None
     id_lattes: str | None
     id_departamento: int | None
+    departamento_nome: str | None = None
+    departamento_sigla: str | None = None
     situacao: str
+
+    model_config = {"from_attributes": True}
+
+
+class DepartamentoResponse(BaseModel):
+    id_departamento: int
+    nome: str
+    sigla: str | None
+    faculdade: str | None
 
     model_config = {"from_attributes": True}
 
@@ -58,6 +70,20 @@ class ProjetoResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+def _com_departamento(docente: Docente) -> Docente:
+    departamento = docente.departamento
+    docente.departamento_nome = departamento.nome if departamento else None
+    docente.departamento_sigla = departamento.sigla if departamento else None
+    return docente
+
+
+@catalogo.get("/", response_model=list[DepartamentoResponse])
+async def listar_departamentos(db: AsyncSession = Depends(get_db)):
+    """Lista departamentos para os filtros da interface."""
+    result = await db.execute(select(Departamento).order_by(Departamento.nome))
+    return result.scalars().all()
+
+
 # ── Rotas ───────────────────────────────────────────────────
 @router.get("/", response_model=list[DocenteResponse])
 async def listar_docentes(
@@ -68,24 +94,28 @@ async def listar_docentes(
     db: AsyncSession = Depends(get_db),
 ):
     """Lista docentes com filtros opcionais."""
-    stmt = select(Docente)
+    stmt = select(Docente).options(selectinload(Docente.departamento))
     if departamento:
         stmt = stmt.join(Departamento).where(Departamento.nome.ilike(f"%{departamento}%"))
     if nome:
         stmt = stmt.where(Docente.nome.ilike(f"%{nome}%"))
     stmt = stmt.offset(skip).limit(limit)
     result = await db.execute(stmt)
-    return result.scalars().all()
+    return [_com_departamento(docente) for docente in result.scalars().all()]
 
 
 @router.get("/{id_docente}", response_model=DocenteResponse)
 async def obter_docente(id_docente: int, db: AsyncSession = Depends(get_db)):
     """Retorna um docente pelo ID."""
-    result = await db.execute(select(Docente).where(Docente.id_docente == id_docente))
+    result = await db.execute(
+        select(Docente)
+        .options(selectinload(Docente.departamento))
+        .where(Docente.id_docente == id_docente)
+    )
     docente = result.scalar_one_or_none()
     if not docente:
         raise HTTPException(status_code=404, detail="Docente não encontrado")
-    return docente
+    return _com_departamento(docente)
 
 
 @router.post("/", response_model=DocenteResponse, status_code=201)

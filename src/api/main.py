@@ -1,14 +1,19 @@
 """Ponto de entrada da API FastAPI — GuiaOrientador-UnB."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.api.routes import docentes, estudantes, health, rag
 from src.config import settings
 from src.pipeline.ingestao import garantir_buckets
+
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 
 @asynccontextmanager
@@ -43,6 +48,16 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(docentes.catalogo)
 app.include_router(docentes.router)
 app.include_router(estudantes.router)
 app.include_router(rag.router)
+
+
+@app.get("/", include_in_schema=False)
+async def pagina_inicial():
+    """Interface do GuiaOrientador."""
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+app.mount("/assets", StaticFiles(directory=FRONTEND_DIR), name="assets")
