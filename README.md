@@ -1,6 +1,6 @@
 # GuiaOrientador-UnB
 
-Sistema para ajudar alunos da Universidade de Brasília a encontrar temas e orientadores de TCC e monografia. A dor que ele trata é a assimetria de informação no campus: o estudante muitas vezes não sabe quais docentes pesquisam a área dele, inclusive em outros departamentos, nem se esses docentes têm projetos ativos. O resultado costuma ser uma escolha tardia ou desorientada.
+Sistema para o aluno da UnB achar um projeto de pesquisa, extensão ou TCC alinhado à afinidade dele. Se não houver projeto nessa linha, o guia indica docentes que pesquisam algo próximo. A dor de origem, registrada na planilha, é a assimetria de informação no campus: o estudante muitas vezes não descobre o que já existe fora do próprio departamento.
 
 Quem usa são alunos de graduação da UnB, em especial quem está definindo o tema do TCC ou pleiteando bolsa PIBIC/PIBITI.
 
@@ -20,14 +20,15 @@ Disciplina: Sistema de Banco de Dados 2, turma 03, 2026.2.
 
 ## O que o sistema faz
 
-O aluno descreve um tema em linguagem natural, por exemplo “processamento de linguagem natural” ou “visão computacional”. O GuiaOrientador cruza essa pergunta com o cadastro de docentes, os projetos de pesquisa e os trechos dos currículos, e devolve orientadores próximos daquele assunto.
+O aluno descreve uma afinidade, por exemplo “processamento de linguagem natural” ou “álgebra linear”. A busca olha primeiro os projetos cadastrados, com tipo pesquisa, extensão ou TCC. Só quando nenhum projeto passa do limiar de semelhança a resposta muda para docentes cuja linha de pesquisa se aproxima do tema.
 
 Na interface em `http://localhost:8000` dá para:
 
-- buscar docente por nome ou departamento;
-- abrir o perfil, com titulação, e-mail e projetos;
-- perguntar o tema na conversa;
-- salvar o perfil do estudante (curso, áreas de interesse e tema pretendido) para associar as próximas perguntas a ele.
+- filtrar por tipo de projeto e por departamento;
+- abrir o projeto, com descrição, docente responsável e contato;
+- ver o docente e a linha dele quando não existe projeto;
+- perguntar o tema na conversa, com a mesma regra;
+- salvar o perfil do estudante (curso, áreas de interesse e tema pretendido).
 
 ## De onde vêm os dados
 
@@ -64,17 +65,17 @@ O desenho original da planilha previa MinIO como data lake. As imagens públicas
 
 | Entidade            | Representa                                    | Modelo                   |
 | ------------------- | --------------------------------------------- | ------------------------ |
-| Docente             | Professor disponível para orientação          | Relacional, normalizado  |
-| Projeto de pesquisa | Linha temática ou produção do docente         | Relacional, normalizado  |
+| Docente             | Professor e a linha de pesquisa, usada quando não há projeto | Relacional, normalizado  |
+| Projeto             | Pesquisa, extensão ou TCC de um docente       | Relacional, normalizado  |
 | Chunk vetorial      | Trecho de resumo ou publicação, com embedding | Vetorial, desnormalizado |
 | Sessão de interação | Pergunta do aluno, resposta e feedback        | Documento (JSONB)        |
 | Estudante           | Perfil de quem está buscando orientador       | Relacional               |
 
 As perguntas que o sistema precisa responder:
 
-1. Quais orientadores de um departamento pesquisam um tema descrito em linguagem natural? Busca vetorial com filtro relacional, cerca de 1.500 vezes por dia, na tela de busca e no chat.
-2. Quais projetos ativos um docente coordena? Junção por chave, cerca de 800 vezes por dia, na página do perfil.
-3. Quantas recomendações foram feitas por departamento no semestre, e qual a nota média de feedback? Agregação SQL, cerca de 30 vezes por dia, no relatório da coordenação.
+1. Quais projetos de pesquisa, extensão ou TCC se alinham à afinidade do aluno? É a consulta principal, na tela de busca e no chat.
+2. Se nenhum projeto se aproximar, quais docentes seguem uma linha parecida? É a alternativa, não o primeiro resultado.
+3. Quantas recomendações foram feitas por departamento no semestre, e qual a nota média de feedback? Agregação SQL, no relatório da coordenação.
 
 ## Pipeline
 
