@@ -1,0 +1,83 @@
+services:
+  # ── PostgreSQL 16 + pgvector ──────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: guia_orientador_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-guia_orientador}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_pg_password}
+      POSTGRES_DB: ${POSTGRES_DB:-guia_orientador_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-guia_orientador}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (Cache + Sessões) ───────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: guia_orientador_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Object storage S3 (Bronze & Silver) ──────────────────────────
+  # MinIO não publica mais imagem pública (Docker Hub removido, Quay exige login).
+  # SeaweedFS fala o mesmo protocolo S3; o cliente Python continua o mesmo.
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: guia_orientador_seaweedfs
+    restart: unless-stopped
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minio_admin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-changeme_minio_password}
+      S3_BUCKET: ${MINIO_BUCKET_BRONZE:-bronze},${MINIO_BUCKET_SILVER:-silver}
+    ports:
+      - "8333:8333"
+    volumes:
+      - seaweedfs_data:/data
+
+  # ── FastAPI Backend ───────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: guia_orientador_api
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-guia_orientador}:${POSTGRES_PASSWORD:-changeme_pg_password}@postgres:5432/${POSTGRES_DB:-guia_orientador_db}
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=seaweedfs:8333
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minio_admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-changeme_minio_password}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - APP_ENV=${APP_ENV:-development}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      seaweedfs:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  seaweedfs_data:
