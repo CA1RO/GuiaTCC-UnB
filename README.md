@@ -90,6 +90,8 @@ Se a chave da OpenAI não estiver configurada, a interface e o cadastro funciona
 
 ## Entrega E1
 
+A leitura em tela está no GitHub Pages: https://ca1ro.github.io/GuiaTCC-UnB/
+
 A origem transacional desta entrega é o cadastro público de docentes da UnB. A pergunta de gestão, o esquema, a carga, o volume, a caracterização, o tratamento de histórico e o ADR estão em:
 
 - [Domínio e pergunta de gestão](docs/e1/01-dominio-e-pergunta.md)
