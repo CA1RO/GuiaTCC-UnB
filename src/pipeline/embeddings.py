@@ -12,15 +12,23 @@ Conforme aba "5 Pipeline", linha 3.
 """
 
 import logging
+import re
 
 from langchain_openai import OpenAIEmbeddings
-from sqlalchemy import select
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.config import settings
-from src.db.models import ChunkVetorial, Docente
+from src.db.models import ChunkVetorial, Docente, ProjetoPesquisa
 
 logger = logging.getLogger(__name__)
+
+_STOPWORDS = {
+    "quero", "trabalhar", "com", "alguem", "alguém", "para", "sobre", "quem",
+    "pesquisa", "pesquisam", "uma", "uns", "das", "dos", "que", "por", "como",
+    "meu", "minha", "tema", "orientador", "orientadora",
+}
 
 
 def chunkar_texto(texto: str, chunk_size: int = None, overlap: int = None) -> list[str]:
@@ -103,6 +111,96 @@ async def gerar_embeddings_docente(
     await db.flush()
     logger.info(f"Gerados {len(chunks_criados)} chunks para docente {id_docente}")
     return chunks_criados
+
+
+async def indexar_projetos_se_vazio(db: AsyncSession) -> int:
+    """Gera embeddings dos projetos cadastrados quando a base vetorial ainda está vazia."""
+    total = await db.scalar(select(func.count()).select_from(ChunkVetorial))
+    if total:
+        return 0
+
+    result = await db.execute(
+        select(ProjetoPesquisa).options(
+            selectinload(ProjetoPesquisa.docente).selectinload(Docente.departamento)
+        )
+    )
+    projetos = result.scalars().all()
+    if not projetos:
+        return 0
+
+    textos = []
+    for projeto in projetos:
+        docente = projeto.docente
+        departamento = docente.departamento.nome if docente and docente.departamento else ""
+        chaves = ", ".join(projeto.palavras_chave or [])
+        textos.append(
+            f"Docente: {docente.nome}. Departamento: {departamento}. "
+            f"Projeto: {projeto.titulo}. {projeto.descricao or ''} Palavras-chave: {chaves}."
+        )
+
+    vetores = get_embedding_model().embed_documents(textos)
+    for projeto, texto, vetor in zip(projetos, textos, vetores):
+        db.add(
+            ChunkVetorial(
+                id_docente=projeto.id_docente,
+                id_projeto=projeto.id_projeto,
+                conteudo_texto=texto,
+                embedding_vetor=vetor,
+                metadados_json={"titulo": projeto.titulo, "id_projeto": projeto.id_projeto},
+            )
+        )
+    await db.flush()
+    logger.info("Indexados %s projetos na base vetorial", len(projetos))
+    return len(projetos)
+
+
+async def buscar_lexical(
+    db: AsyncSession,
+    pergunta: str,
+    top_k: int = None,
+    filtro_departamento: str | None = None,
+) -> list[dict]:
+    """Busca por semelhança de texto quando o provedor de embeddings não responde."""
+    from src.db.models import Departamento
+
+    top_k = top_k or settings.rag_top_k
+    termos = [
+        termo
+        for termo in re.findall(r"[0-9a-záàâãéêíóôõúç]+", pergunta.lower())
+        if len(termo) > 3 and termo not in _STOPWORDS
+    ] or [pergunta]
+
+    corpus = func.concat_ws(
+        " ",
+        ProjetoPesquisa.titulo,
+        func.coalesce(ProjetoPesquisa.descricao, ""),
+        func.coalesce(func.array_to_string(ProjetoPesquisa.palavras_chave, " "), ""),
+        Docente.nome,
+    )
+    score = func.greatest(*(func.word_similarity(termo, corpus) for termo in termos))
+    stmt = (
+        select(ProjetoPesquisa, Docente.nome.label("nome_docente"), score.label("similaridade"))
+        .join(Docente, ProjetoPesquisa.id_docente == Docente.id_docente)
+        .where(score > 0.45)
+        .order_by(desc(score))
+        .limit(top_k)
+    )
+    if filtro_departamento:
+        stmt = stmt.join(Departamento, Docente.id_departamento == Departamento.id_departamento).where(
+            Departamento.nome.ilike(f"%{filtro_departamento}%")
+        )
+
+    result = await db.execute(stmt)
+    return [
+        {
+            "id_chunk": row.ProjetoPesquisa.id_projeto,
+            "conteudo_texto": f"Projeto: {row.ProjetoPesquisa.titulo}. {row.ProjetoPesquisa.descricao or ''}",
+            "nome_docente": row.nome_docente,
+            "similaridade": float(row.similaridade),
+            "metadados": {"titulo": row.ProjetoPesquisa.titulo, "id_projeto": row.ProjetoPesquisa.id_projeto},
+        }
+        for row in result.all()
+    ]
 
 
 async def buscar_similar(
