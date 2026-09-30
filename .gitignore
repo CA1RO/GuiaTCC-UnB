@@ -22,8 +22,12 @@ wheels/
 
 # Virtual environments
 .venv/
+.venv-docs/
 venv/
 ENV/
+
+# MkDocs
+site/
 
 # IDE
 .idea/
