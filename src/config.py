@@ -42,9 +42,18 @@ class Settings(BaseSettings):
     rag_top_k: int = 5
     embedding_dimension: int = 1536
 
+    # ── Fonte pública CAPES ──
+    capes_docentes_url: str = (
+        "https://dadosabertos.capes.gov.br/dataset/"
+        "0be9cfba-56e8-4da1-b3cc-0a05412eba3d/resource/"
+        "4b256d1c-9448-4598-bf1d-9d8d8df633de/download/"
+        "br-capes-colsucup-docente-2024-2025-12-01.csv"
+    )
+    capes_sigla_instituicao: str = "UNB"
+
     @property
     def database_url_sync(self) -> str:
-        return self.database_url.replace("+asyncpg", "")
+        return self.database_url.replace("+asyncpg", "+psycopg")
 
 
 settings = Settings()
