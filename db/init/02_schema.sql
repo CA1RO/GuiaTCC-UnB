@@ -29,7 +29,12 @@ CREATE TABLE IF NOT EXISTS docente (
     link_lattes      VARCHAR(500),
     id_lattes        VARCHAR(50) UNIQUE,
     id_departamento  INTEGER REFERENCES departamento(id_departamento),
+    linha_pesquisa   TEXT,
     situacao         VARCHAR(50) DEFAULT 'ativo',
+    -- data_ingresso_orgao e data_lotacao são hora do evento na fonte (DPO).
+    -- data_atualizacao e updated_at são hora da ingestão neste banco.
+    data_ingresso_orgao DATE,
+    data_lotacao     DATE,
     data_atualizacao TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     created_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -40,6 +45,7 @@ CREATE INDEX idx_docente_departamento ON docente USING btree (id_departamento);
 CREATE INDEX idx_docente_id_lattes    ON docente USING btree (id_lattes);
 CREATE INDEX idx_docente_id_capes     ON docente USING btree (id_capes);
 CREATE INDEX idx_docente_nome_trgm    ON docente USING gin (nome gin_trgm_ops);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_docente_nome ON docente (nome);
 
 -- ── Programa de Pós-Graduação (fonte CAPES) ───────────────
 CREATE TABLE IF NOT EXISTS programa_pos_graduacao (
@@ -80,16 +86,19 @@ CREATE TABLE IF NOT EXISTS projeto_pesquisa (
     id_docente       INTEGER NOT NULL REFERENCES docente(id_docente) ON DELETE CASCADE,
     titulo           VARCHAR(500) NOT NULL,
     descricao        TEXT,
+    tipo             VARCHAR(20) NOT NULL DEFAULT 'pesquisa',
     ano_inicio       INTEGER,
     ano_fim          INTEGER,
     status           VARCHAR(50) DEFAULT 'ativo',
     palavras_chave   TEXT[],
     created_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    CONSTRAINT projeto_pesquisa_tipo_check CHECK (tipo IN ('pesquisa', 'extensao', 'tcc'))
 );
 
 CREATE INDEX idx_projeto_docente ON projeto_pesquisa USING btree (id_docente);
 CREATE INDEX idx_projeto_status  ON projeto_pesquisa USING btree (status);
+CREATE INDEX idx_projeto_tipo    ON projeto_pesquisa USING btree (tipo);
 CREATE INDEX idx_projeto_anos    ON projeto_pesquisa USING btree (ano_inicio, ano_fim);
 
 -- ── Chunk Vetorial (embeddings semânticos) ─────────────────

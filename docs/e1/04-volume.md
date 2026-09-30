@@ -2,14 +2,14 @@
 
 A medição foi executada sobre o CSV público completo de 2024, depois do filtro para a UnB.
 
-| Medida | Resultado |
-| --- | ---: |
-| Docentes distintos | 2.016 |
-| Programas distintos | 102 |
-| Vínculos docente–programa–ano | 2.472 |
-| Docentes ligados a mais de um programa | 409 |
-| Maior número de programas por docente | 5 |
-| Vínculos perdidos em um modelo com um único programa por docente | 456 |
+| Medida                                                           | Resultado |
+| ---------------------------------------------------------------- | --------: |
+| Docentes distintos                                               |     2.016 |
+| Programas distintos                                              |       102 |
+| Vínculos docente–programa–ano                                    |     2.472 |
+| Docentes ligados a mais de um programa                           |       409 |
+| Maior número de programas por docente                            |         5 |
+| Vínculos perdidos em um modelo com um único programa por docente |       456 |
 
 O volume ultrapassa o exemplo mínimo de cem linhas e representa todo o recorte da UnB presente na edição selecionada.
 

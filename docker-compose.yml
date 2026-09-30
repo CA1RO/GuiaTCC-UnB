@@ -99,6 +99,8 @@ services:
     volumes:
       - ./src:/app/src
       - ./frontend:/app/frontend
+      - ./scripts:/app/scripts
+      - ./db:/app/db
     depends_on:
       postgres:
         condition: service_healthy
