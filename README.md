@@ -1,10 +1,39 @@
 # GuiaOrientador-UnB
 
+<<<<<<< HEAD
+O **GuiaOrientador-UnB** é uma plataforma de apoio à escolha de temas e orientadores de trabalhos acadêmicos na Universidade de Brasília. O projeto busca reduzir a distância entre estudantes e docentes, reunindo informações acadêmicas que normalmente ficam dispersas entre departamentos, programas e diferentes fontes institucionais.
+=======
 Sistema para o aluno da UnB achar um projeto de pesquisa, extensão ou TCC alinhado à afinidade dele. Se não houver projeto nessa linha, o guia indica docentes que pesquisam algo próximo. A dor de origem, registrada na planilha, é a assimetria de informação no campus: o estudante muitas vezes não descobre o que já existe fora do próprio departamento.
 
-Quem usa são alunos de graduação da UnB, em especial quem está definindo o tema do TCC ou pleiteando bolsa PIBIC/PIBITI.
+> > > > > > > 32e4f30fc9e7b190fed4bbffed0f9965559805aa
 
-Disciplina: Sistema de Banco de Dados 2, turma 03, 2026.2.
+O público principal são estudantes que estão definindo um tema de TCC ou monografia, procurando orientação acadêmica ou buscando oportunidades de iniciação científica.
+
+## Visão geral
+
+O estudante informa um tema ou uma área de interesse. A plataforma organiza dados públicos sobre docentes e programas acadêmicos para ajudar a identificar pessoas e áreas relacionadas à busca.
+
+O projeto combina uma aplicação web com uma pipeline de dados responsável por coletar, tratar, validar e armazenar as informações usadas nas consultas.
+
+## Como funciona
+
+1. Dados acadêmicos públicos são obtidos de fontes oficiais.
+2. A pipeline seleciona os campos necessários, normaliza os registros e evita duplicações.
+3. As informações são armazenadas em um banco relacional versionado por migrações.
+4. A API disponibiliza os dados para a interface e para os módulos de busca.
+5. O estudante consulta docentes e áreas relacionadas ao seu tema de interesse.
+
+## Componentes
+
+| Componente        | Responsabilidade                                               |
+| ----------------- | -------------------------------------------------------------- |
+| Frontend          | Interface de consulta e interação com o estudante              |
+| FastAPI           | API e regras da aplicação                                      |
+| PostgreSQL        | Cadastro relacional de docentes, programas e demais entidades  |
+| pgvector          | Suporte à evolução da busca por similaridade semântica         |
+| Pipeline de dados | Download, transformação, validação e carga das fontes públicas |
+| Alembic           | Versionamento e execução das mudanças do banco                 |
+| Docker Compose    | Inicialização reproduzível dos serviços                        |
 
 A documentação da entrega E1, para leitura em tela: [https://ca1ro.github.io/GuiaTCC-UnB/](https://ca1ro.github.io/GuiaTCC-UnB/).
 
@@ -20,7 +49,7 @@ A documentação da entrega E1, para leitura em tela: [https://ca1ro.github.io/G
 | Bruna                             | Integrante                 |
 | Lais                              | Integrante                 |
 
-## O que o sistema faz
+## Executar o projeto
 
 O aluno descreve uma afinidade, por exemplo “processamento de linguagem natural” ou “álgebra linear”. A busca olha primeiro os projetos cadastrados, com tipo pesquisa, extensão ou TCC. Só quando nenhum projeto passa do limiar de semelhança a resposta muda para docentes cuja linha de pesquisa se aproxima do tema.
 
@@ -116,29 +145,29 @@ docker compose exec api python -m scripts.carregar_dados_abertos
 
 O segundo comando baixa o arquivo público de docentes e popula o banco. Pode rodar de novo: a carga atualiza a lotação e não duplica nome. Abra http://localhost:8000.
 
-| Serviço             | Endereço                   |
-| ------------------- | -------------------------- |
-| Interface e API     | http://localhost:8000      |
-| Documentação da API | http://localhost:8000/docs |
-| PostgreSQL          | localhost:5432             |
-| Redis               | localhost:6379             |
-| S3 (SeaweedFS)      | http://localhost:8333      |
+- aplicação: <http://localhost:8000>;
+- documentação da API: <http://localhost:8000/docs>.
 
 Projetos de pesquisa, extensão e TCC de exemplo, com linha de pesquisa, continuam em um comando separado. O arquivo público não traz projeto. Esse comando vale uma vez: nomes de departamento e IDs Lattes são únicos, então uma segunda execução falha.
 
 ```bash
-docker compose exec api python -m scripts.seed_dados_exemplo
+python -m venv .venv-docs
+source .venv-docs/bin/activate
+python -m pip install -r requirements-docs.txt
+mkdocs serve
 ```
 
-Para ativar embeddings e a resposta do chat, preencha `OPENAI_API_KEY` no `.env` e suba de novo:
+Abra <http://127.0.0.1:8000>. O MkDocs atualiza a página automaticamente quando um arquivo em `docs/` é salvo.
 
-```bash
-docker compose up -d
+## Estrutura principal
+
+```text
+alembic/      migrações do banco
+docs/         documentação publicada pelo MkDocs
+frontend/     interface web
+scripts/      cargas e medições reproduzíveis
+src/api/      rotas e serviços da API
+src/db/       modelos e acesso ao banco
+src/pipeline/ ingestão e transformação dos dados
+tests/        testes automatizados
 ```
-
-## Riscos que a equipe assumiu
-
-- A extração do Lattes pode cair por limite de taxa ou mudança de layout. A mitigação é guardar o bruto imutável e só promover um lote que passe na validação.
-- XML heterogêneo gera docente duplicado. A chave estável é o ID Lattes; o que não fecha vai para uma fila de rejeição.
-- O índice HNSW pode estourar a memória se a base crescer sem particionar. A decisão deve ser reaberta se passar de 500 mil vetores ou se a latência P99 da busca passar de 200 ms.
-- Cota ou indisponibilidade do provedor de embeddings derruba o chat. O Redis guarda perguntas repetidas, e a busca relacional cobre o caso em que o modelo externo não responde.

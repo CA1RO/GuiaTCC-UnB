@@ -1,21 +1,47 @@
-# Carga reprodutível
+# Carga reproduzível
 
-Um comando baixa a fonte pública e popula `departamento` e `docente`. Não há CSV versionado no repositório e não há etapa manual.
+Um único comando cria o ambiente, aplica a migração, baixa a fonte pública e popula o banco:
 
 ```bash
-docker compose up -d --build
-docker compose exec api python -m scripts.carregar_dados_abertos
+cp .env.example .env
+docker compose up --build
 ```
 
-O script `scripts/carregar_dados_abertos.py`:
+O fluxo executado pelo Compose é:
 
-1. baixa `dados_institucionais_docentes.7z` de [dados.unb.br](https://dados.unb.br/pt_PT/dataset/docentes);
-2. grava o arquivo bruto, com data e hora no caminho, no bucket `bronze`;
-3. abre o 7z, lê o CSV em Latin-1 com separador `;`;
-4. faz upsert das 86 unidades e dos 2.797 docentes.
+1. iniciar o PostgreSQL 16 com pgvector;
+2. executar as migrações Alembic em ordem;
+3. baixar o CSV oficial da CAPES;
+4. ler o arquivo em fluxo e filtrar `SG_ENTIDADE_ENSINO = UNB`;
+5. consolidar docentes, programas e vínculos;
+6. fazer upsert das três estruturas;
+7. iniciar a API depois da conclusão da carga.
 
-A segunda execução não duplica linha. Depois de duas cargas seguidas, o banco ficou com 2.802 docentes: 2.797 da fonte e 5 do exemplo local, que têm nome diferente e por isso sobrevivem ao upsert. Unidades: 91, pelas mesmas cinco do exemplo.
+Não há CSV copiado para o repositório, preenchimento manual ou dependência de uma chave da OpenAI para realizar a carga da E1.
 
-O upsert atualiza titulação, situação, unidade, `data_ingresso_orgao` e `data_lotacao`. Preserva `linha_pesquisa`, e-mail e ID Lattes, porque o arquivo público não traz esses campos.
+## Verificação
 
-O pacote `py7zr` está em `requirements.txt`. A imagem da API precisa ser construída com `--build` para incluí-lo.
+```bash
+docker compose exec postgres psql \
+  -U guia_orientador \
+  -d guia_orientador_db \
+  -c "SELECT (SELECT count(*) FROM docente) AS docentes, (SELECT count(*) FROM programa_pos_graduacao) AS programas, (SELECT count(*) FROM docente_programa) AS vinculos;"
+```
+
+Resultado esperado para a edição de 2024:
+
+```text
+ docentes | programas | vinculos
+----------+-----------+----------
+     2016 |       102 |     2472
+```
+
+## Idempotência
+
+Para executar novamente o carregador:
+
+```bash
+docker compose run --rm loader
+```
+
+Docentes usam `id_capes`, programas usam `codigo_capes` e vínculos usam a chave composta `(id_docente, id_programa, ano_base)`. Por isso, repetir a mesma carga atualiza os registros existentes sem aumentar as contagens.

@@ -1,18 +1,26 @@
-# Volume
+# Volume e medição da fonte
 
-A maior tabela da origem, depois da carga pública, é `docente`.
+A medição foi executada sobre o CSV público completo de 2024, depois do filtro para a UnB.
 
-| Conjunto | Linhas |
-| --- | ---: |
-| Linhas no CSV público | 2.797 |
-| Nomes distintos no CSV | 2.797 |
-| Unidades de lotação distintas | 86 |
-| Docentes `ATIVO PERMANENTE` | 2.607 |
-| Docentes no banco, com o exemplo local | 2.802 |
-| Departamentos no banco, com o exemplo local | 91 |
+| Medida                                                           | Resultado |
+| ---------------------------------------------------------------- | --------: |
+| Docentes distintos                                               |     2.016 |
+| Programas distintos                                              |       102 |
+| Vínculos docente–programa–ano                                    |     2.472 |
+| Docentes ligados a mais de um programa                           |       409 |
+| Maior número de programas por docente                            |         5 |
+| Vínculos perdidos em um modelo com um único programa por docente |       456 |
 
-As outras situações no arquivo: 154 `CONT.PROF.SUBSTITUTO`, 23 `CEDIDO`, 8 `CONT.PROF.VISITANTE`, 3 `EXCEDENTE A LOTAÇÃO` e 2 `CONTRATO TEMPORÁRIO`.
+O volume ultrapassa o exemplo mínimo de cem linhas e representa todo o recorte da UnB presente na edição selecionada.
 
-O arquivo compactado tem 106.001 bytes e o CSV interno tem 1.148.249 bytes. A tabela `docente`, com índices, ocupava 2.792 kB no PostgreSQL 16 logo após a carga. O nome mais longo tem 58 caracteres, a unidade mais longa tem 40 e a situação mais longa tem 20, todos dentro dos limites `VARCHAR` do esquema.
+## Comparação das alternativas
 
-Esse volume cobre o cadastro institucional inteiro publicado pela UnB nesse recurso, não uma amostra de cem linhas.
+Uma projeção reproduzível dos campos usados pelo sistema ocupou 456.148 bytes no formato desnormalizado e 333.912 bytes no formato normalizado. A redução medida foi de 26,8%.
+
+Os bytes representam JSON compacto para comparar a repetição lógica dos mesmos atributos. Eles não são uma estimativa do armazenamento físico do PostgreSQL.
+
+A medição pode ser repetida com:
+
+```bash
+python -m scripts.medir_modelagem_capes
+```

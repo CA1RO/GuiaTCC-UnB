@@ -18,9 +18,14 @@ CREATE INDEX idx_departamento_nome ON departamento USING btree (nome);
 -- ── Docente ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS docente (
     id_docente       SERIAL PRIMARY KEY,
+    id_capes         INTEGER UNIQUE,
     nome             VARCHAR(300) NOT NULL,
     email            VARCHAR(200),
     titulacao        VARCHAR(100),
+    ano_titulacao    INTEGER,
+    area_titulacao   VARCHAR(200),
+    tipo_vinculo     VARCHAR(100),
+    regime_trabalho  VARCHAR(100),
     link_lattes      VARCHAR(500),
     id_lattes        VARCHAR(50) UNIQUE,
     id_departamento  INTEGER REFERENCES departamento(id_departamento),
@@ -38,10 +43,44 @@ CREATE TABLE IF NOT EXISTS docente (
 CREATE INDEX idx_docente_nome         ON docente USING btree (nome);
 CREATE INDEX idx_docente_departamento ON docente USING btree (id_departamento);
 CREATE INDEX idx_docente_id_lattes    ON docente USING btree (id_lattes);
+CREATE INDEX idx_docente_id_capes     ON docente USING btree (id_capes);
 CREATE INDEX idx_docente_nome_trgm    ON docente USING gin (nome gin_trgm_ops);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_docente_nome ON docente (nome);
 
--- ── Projeto (pesquisa, extensão ou TCC) ───────────────────
+-- ── Programa de Pós-Graduação (fonte CAPES) ───────────────
+CREATE TABLE IF NOT EXISTS programa_pos_graduacao (
+    id_programa                 SERIAL PRIMARY KEY,
+    codigo_capes                VARCHAR(20) NOT NULL UNIQUE,
+    nome                        VARCHAR(300) NOT NULL,
+    grau                        VARCHAR(80),
+    modalidade                  VARCHAR(80),
+    conceito                    VARCHAR(10),
+    area_avaliacao              VARCHAR(200),
+    grande_area_conhecimento    VARCHAR(200),
+    area_conhecimento           VARCHAR(200),
+    municipio                   VARCHAR(150),
+    uf                          VARCHAR(2),
+    created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_programa_area ON programa_pos_graduacao USING btree (area_avaliacao);
+
+-- Um docente pode atuar em vários programas e o vínculo é anual.
+CREATE TABLE IF NOT EXISTS docente_programa (
+    id_docente       INTEGER NOT NULL REFERENCES docente(id_docente) ON DELETE CASCADE,
+    id_programa      INTEGER NOT NULL REFERENCES programa_pos_graduacao(id_programa) ON DELETE CASCADE,
+    ano_base         INTEGER NOT NULL,
+    categoria_docente VARCHAR(80),
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id_docente, id_programa, ano_base)
+);
+
+CREATE INDEX idx_docente_programa_programa ON docente_programa USING btree (id_programa);
+CREATE INDEX idx_docente_programa_ano      ON docente_programa USING btree (ano_base);
+
+-- ── Projeto de Pesquisa ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS projeto_pesquisa (
     id_projeto       SERIAL PRIMARY KEY,
     id_docente       INTEGER NOT NULL REFERENCES docente(id_docente) ON DELETE CASCADE,
@@ -129,6 +168,12 @@ CREATE TRIGGER set_updated_at_departamento
 
 CREATE TRIGGER set_updated_at_docente
     BEFORE UPDATE ON docente FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+CREATE TRIGGER set_updated_at_programa_pos_graduacao
+    BEFORE UPDATE ON programa_pos_graduacao FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+CREATE TRIGGER set_updated_at_docente_programa
+    BEFORE UPDATE ON docente_programa FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 
 CREATE TRIGGER set_updated_at_projeto_pesquisa
     BEFORE UPDATE ON projeto_pesquisa FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
