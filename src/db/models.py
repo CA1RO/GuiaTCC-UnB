@@ -1,11 +1,12 @@
 """Modelos SQLAlchemy — mapeamento ORM das entidades do GuiaOrientador-UnB."""
 
-from datetime import datetime
+from datetime import date, datetime
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     ARRAY,
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -45,7 +46,10 @@ class Docente(Base):
     link_lattes: Mapped[str | None] = mapped_column(String(500))
     id_lattes: Mapped[str | None] = mapped_column(String(50), unique=True)
     id_departamento: Mapped[int | None] = mapped_column(ForeignKey("departamento.id_departamento"))
+    linha_pesquisa: Mapped[str | None] = mapped_column(Text)
     situacao: Mapped[str] = mapped_column(String(50), default="ativo")
+    data_ingresso_orgao: Mapped[date | None] = mapped_column(Date)
+    data_lotacao: Mapped[date | None] = mapped_column(Date)
     data_atualizacao: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -62,6 +66,7 @@ class ProjetoPesquisa(Base):
     id_docente: Mapped[int] = mapped_column(ForeignKey("docente.id_docente", ondelete="CASCADE"), nullable=False)
     titulo: Mapped[str] = mapped_column(String(500), nullable=False)
     descricao: Mapped[str | None] = mapped_column(Text)
+    tipo: Mapped[str] = mapped_column(String(20), default="pesquisa", nullable=False)
     ano_inicio: Mapped[int | None] = mapped_column(Integer)
     ano_fim: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(50), default="ativo")

@@ -412,12 +412,21 @@ dialog h3 { margin: 1.2rem 0 0.6rem; }
 
 .projeto p { margin: 0.35rem 0; line-height: 1.45; }
 .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.45rem; }
-.tag {
+.tag, .selo {
   background: #e7f3ec;
   color: var(--green-deep);
   border-radius: 999px;
   padding: 0.15rem 0.55rem;
   font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.aviso {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: #f7efe2;
+  color: var(--ink);
 }
 
 @media (max-width: 900px) {

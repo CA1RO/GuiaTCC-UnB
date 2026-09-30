@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.api.routes import docentes, estudantes, health, rag
+from src.api.routes import busca, docentes, estudantes, health, rag
 from src.config import settings
 from src.pipeline.ingestao import garantir_buckets
 
@@ -31,9 +31,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="GuiaOrientador-UnB",
     description=(
-        "API para auxiliar alunos da UnB a encontrar orientadores "
-        "e temas de TCC por meio de busca semântica (RAG) sobre "
-        "currículos Lattes e dados acadêmicos abertos."
+        "API para o aluno encontrar projetos de pesquisa, extensão ou TCC "
+        "alinhados à sua afinidade. Sem projeto, indica docentes com linha parecida."
     ),
     version="0.1.0",
     lifespan=lifespan,
@@ -50,6 +49,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(docentes.catalogo)
 app.include_router(docentes.router)
+app.include_router(busca.router)
 app.include_router(estudantes.router)
 app.include_router(rag.router)
 
