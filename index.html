@@ -1,0 +1,1033 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentação da entrega E1 de Sistemas de Banco de Dados 2">
+      
+      
+      
+        <link rel="canonical" href="https://ca1ro.github.io/GuiaTCC-UnB/">
+      
+      
+      
+        <link rel="next" href="e1/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>GuiaOrientador-UnB</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#guiaorientador-unb" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="." title="GuiaOrientador-UnB" class="md-header__button md-logo" aria-label="GuiaOrientador-UnB" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GuiaOrientador-UnB
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Início
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CA1RO/GuiaTCC-UnB" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CA1RO/GuiaTCC-UnB
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Início
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="e1/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Entrega 1
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="GuiaOrientador-UnB" class="md-nav__button md-logo" aria-label="GuiaOrientador-UnB" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GuiaOrientador-UnB
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CA1RO/GuiaTCC-UnB" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    CA1RO/GuiaTCC-UnB
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#um-ponto-de-partida-para-encontrar-temas-e-orientacao-academica-na-unb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Um ponto de partida para encontrar temas e orientação acadêmica na UnB
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proposta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposta
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Público
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-o-projeto-funciona" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Como o projeto funciona
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-de-dados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline de dados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitetura
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arquitetura">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Componentes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#principios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Princípios
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tecnologias-principais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tecnologias principais
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#equipe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equipe
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executar-o-projeto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executar o projeto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entregas-da-disciplina" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entregas da disciplina
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="e1/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entrega 1
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Entrega 1
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="e1/01-dominio-e-pergunta/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domínio e pergunta
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="e1/02-esquema-e-migracoes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Esquema e migrações
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="e1/03-carga-reprodutivel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Carga reproduzível
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="e1/04-volume/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volume
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="e1/05-caracterizacao-da-carga/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caracterização da carga
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="e1/06-historico-da-origem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Histórico da origem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="adr/0001-modelar-docentes-e-programas-capes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 0001
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="guiaorientador-unb">GuiaOrientador-UnB</h1>
+<h2 id="um-ponto-de-partida-para-encontrar-temas-e-orientacao-academica-na-unb">Um ponto de partida para encontrar temas e orientação acadêmica na UnB</h2>
+<p>O <strong>GuiaOrientador-UnB</strong> é uma plataforma de apoio à escolha de temas e orientadores de trabalhos acadêmicos na Universidade de Brasília. O projeto organiza informações acadêmicas para ajudar estudantes a descobrir docentes, programas e áreas relacionados aos assuntos que pretendem desenvolver.</p>
+<h2 id="problema">Problema</h2>
+<p>Estudantes que estão iniciando um TCC, uma monografia ou uma atividade de iniciação científica nem sempre sabem quais docentes atuam na área que desejam pesquisar. As informações existem, mas costumam estar distribuídas entre departamentos, programas de pós-graduação, currículos e portais institucionais.</p>
+<p>Essa dispersão faz com que a escolha de um tema ou orientador dependa, muitas vezes, do conhecimento informal sobre quem pesquisa determinado assunto dentro da universidade.</p>
+<h2 id="proposta">Proposta</h2>
+<p>O GuiaOrientador reúne e estrutura dados acadêmicos públicos para aproximar três elementos:</p>
+<ol>
+<li>o tema ou a área de interesse do estudante;</li>
+<li>os docentes que atuam em áreas relacionadas;</li>
+<li>os programas e contextos acadêmicos nos quais esses docentes trabalham.</li>
+</ol>
+<p>O objetivo é oferecer um ponto de partida confiável para que a busca por orientação seja mais informada, reproduzível e menos dependente de contatos prévios dentro da universidade.</p>
+<h2 id="publico">Público</h2>
+<p>O público principal são estudantes da UnB que estejam:</p>
+<ul>
+<li>definindo um tema de TCC ou monografia;</li>
+<li>procurando orientação acadêmica;</li>
+<li>buscando oportunidades de PIBIC ou PIBITI;</li>
+<li>explorando áreas de pesquisa fora do próprio departamento.</li>
+</ul>
+<h2 id="como-o-projeto-funciona">Como o projeto funciona</h2>
+<ol>
+<li>Dados acadêmicos públicos são obtidos de fontes oficiais.</li>
+<li>A pipeline seleciona os campos necessários, normaliza os registros e evita duplicações.</li>
+<li>As informações são armazenadas em um banco relacional versionado por migrações.</li>
+<li>A API disponibiliza os dados para a interface e para os módulos de busca.</li>
+<li>O estudante informa um tema ou uma área de interesse.</li>
+<li>A plataforma apresenta docentes, programas e áreas relacionados à consulta.</li>
+</ol>
+<h2 id="pipeline-de-dados">Pipeline de dados</h2>
+<pre><code class="language-text">Fonte pública -&gt; Ingestão -&gt; Transformação -&gt; Validação -&gt; Banco -&gt; API -&gt; Interface
+</code></pre>
+<p>A pipeline foi projetada para permitir cargas reproduzíveis e idempotentes. Isso significa que o ambiente pode ser reconstruído a partir de um banco vazio e que a repetição de uma carga não deve criar registros duplicados.</p>
+<p>Todos os integrantes participam das etapas de escolha das fontes, modelagem, implementação, validação, documentação e revisão.</p>
+<h2 id="arquitetura">Arquitetura</h2>
+<p>O GuiaOrientador é organizado em serviços independentes executados pelo Docker Compose.</p>
+<pre><code class="language-text">Fontes públicas
+      |
+      v
+Pipeline de dados ---&gt; PostgreSQL + pgvector
+                            |
+                            v
+                         FastAPI
+                            |
+                            v
+                         Frontend
+</code></pre>
+<h3 id="componentes">Componentes</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Responsabilidade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>Interface de consulta e interação com o estudante</td>
+</tr>
+<tr>
+<td>FastAPI</td>
+<td>API, validações e regras da aplicação</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>Dados relacionais do domínio</td>
+</tr>
+<tr>
+<td>pgvector</td>
+<td>Estrutura para evolução da busca por similaridade</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>Cache e apoio às sessões da aplicação</td>
+</tr>
+<tr>
+<td>SeaweedFS</td>
+<td>Armazenamento de objetos compatível com S3</td>
+</tr>
+<tr>
+<td>Alembic</td>
+<td>Versionamento do esquema físico</td>
+</tr>
+<tr>
+<td>Pipeline de dados</td>
+<td>Download, transformação, validação e carga das fontes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="principios">Princípios</h3>
+<ul>
+<li>ambiente reproduzível a partir de um banco vazio;</li>
+<li>esquema versionado por migrações;</li>
+<li>carga automática e idempotente;</li>
+<li>separação entre fonte pública, banco e aplicação;</li>
+<li>documentação coerente com o comportamento executável do repositório.</li>
+</ul>
+<h2 id="tecnologias-principais">Tecnologias principais</h2>
+<ul>
+<li>Python e FastAPI;</li>
+<li>PostgreSQL e pgvector;</li>
+<li>Alembic;</li>
+<li>Redis;</li>
+<li>SeaweedFS;</li>
+<li>Docker Compose;</li>
+<li>MkDocs Material.</li>
+</ul>
+<h2 id="equipe">Equipe</h2>
+<table>
+<thead>
+<tr>
+<th>Nome</th>
+<th>Papel no pipeline de dados</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lucas Macedo Barboza</td>
+<td>Integrante</td>
+</tr>
+<tr>
+<td>Caetano Santos Lucio</td>
+<td>Engenharia de dados, embeddings e runtime do assistente</td>
+</tr>
+<tr>
+<td>Cairo Florenço</td>
+<td>Integrante</td>
+</tr>
+<tr>
+<td>Leonardo Sobrinho</td>
+<td>Integrante</td>
+</tr>
+<tr>
+<td>Carlos Eduardo Mendes de Mesquita</td>
+<td>Integrante</td>
+</tr>
+<tr>
+<td>Bruna</td>
+<td>Integrante</td>
+</tr>
+<tr>
+<td>Lais</td>
+<td>Integrante</td>
+</tr>
+</tbody>
+</table>
+<h2 id="executar-o-projeto">Executar o projeto</h2>
+<p>Requisitos: Docker com Docker Compose e acesso à internet.</p>
+<pre><code class="language-bash">cp .env.example .env
+docker compose up --build
+</code></pre>
+<p>Depois da inicialização:</p>
+<ul>
+<li>aplicação: <a href="http://localhost:8000">http://localhost:8000</a>;</li>
+<li>documentação da API: <a href="http://localhost:8000/docs">http://localhost:8000/docs</a>.</li>
+</ul>
+<h2 id="entregas-da-disciplina">Entregas da disciplina</h2>
+<p>Os requisitos, medições e decisões específicas de cada entrega ficam separados da apresentação geral do projeto. A aba <strong>Entrega 1</strong> reúne a documentação da fonte pública, do esquema físico, das migrações, da carga e da decisão de modelagem.</p>
+<p>O código-fonte está disponível no <a href="https://github.com/CA1RO/GuiaTCC-UnB">repositório do projeto</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar para o topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "toc.integrate", "content.code.copy"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
