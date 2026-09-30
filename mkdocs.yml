@@ -1,0 +1,13 @@
+site_name: GuiaTCC-UnB 
+site_description: Assistente de TCCs para alunos da UnB
+site_url: https://ca1ro.github.io/GuiaTCC-UnB/
+
+repo_url: https://github.com/CA1RO/GuiaTCC-UnB
+#edit_uri: 
+
+### Build settings ###
+
+theme: material
+
+nav:
+  - Home: index.md
