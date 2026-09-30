@@ -1,11 +1,6 @@
 # GuiaOrientador-UnB
 
-<<<<<<< HEAD
 O **GuiaOrientador-UnB** é uma plataforma de apoio à escolha de temas e orientadores de trabalhos acadêmicos na Universidade de Brasília. O projeto busca reduzir a distância entre estudantes e docentes, reunindo informações acadêmicas que normalmente ficam dispersas entre departamentos, programas e diferentes fontes institucionais.
-=======
-Sistema para o aluno da UnB achar um projeto de pesquisa, extensão ou TCC alinhado à afinidade dele. Se não houver projeto nessa linha, o guia indica docentes que pesquisam algo próximo. A dor de origem, registrada na planilha, é a assimetria de informação no campus: o estudante muitas vezes não descobre o que já existe fora do próprio departamento.
-
-> > > > > > > 32e4f30fc9e7b190fed4bbffed0f9965559805aa
 
 O público principal são estudantes que estão definindo um tema de TCC ou monografia, procurando orientação acadêmica ou buscando oportunidades de iniciação científica.
 
